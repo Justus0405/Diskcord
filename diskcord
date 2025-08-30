@@ -10,7 +10,7 @@ export scriptVersion="1.0"
 
 ## USER CONFIGURATION START
 
-# Drives to check (space-separated, e.g. "sda sdb nvme0n1")
+# Drives to check (space-separated, e.g. "nvme0n1 sda sdb")
 export DRIVES=""
 
 # Discord webhook
@@ -182,26 +182,21 @@ getHealth() {
             embed_color=2798457
         fi
 
-        if [ -z "${drive}" ]; then
-            drive="N/A"
+        if [ -n "${drive}" ]; then
+            embedMessage+="Drive **/dev/${drive}**"$'\n'
         fi
 
-        if [ -z "${driveHealth}" ]; then
-            driveHealth="N/A"
+        if [ -n "${driveHealth}" ]; then
+            embedMessage+="Health Check: ${driveHealth}"$'\n'
         fi
 
-        if [ -z "${driveWear}" ]; then
-            driveWear="N/A"
+        if [ -n "${driveWear}" ]; then
+            embedMessage+="Wear: ${driveWear}%"$'\n'
         fi
 
-        if ! [[ "${driveTemperature}" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            driveTemperature="N/A"
+        if [ -n "${driveTemperature}" ]; then
+            embedMessage+="Temperature: ${driveTemperature}°C"$'\n\n'
         fi
-
-        embedMessage+="Drive **/dev/${drive}**"$'\n'
-        embedMessage+="Health Check: ${driveHealth}"$'\n'
-        embedMessage+="Wear: ${driveWear}%"$'\n'
-        embedMessage+="Temperature: ${driveTemperature}°C"$'\n\n'
     done
 }
 
