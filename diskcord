@@ -270,7 +270,6 @@ printHelp() {
     echo -e "arguments:"
     echo -e "\t install 60s, 60m, 12h, or 1d, for seconds, minutes, hours, days."
     echo -e "\t uninstall"
-    echo -e "\t test"
     echo -e "\t 60s, 60m, 12h, or 1d, for seconds, minutes, hours, days."
     echo -e "\t test"
     echo -e "\t help"
