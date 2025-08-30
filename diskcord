@@ -147,14 +147,6 @@ uninstallScript() {
     logMessage "done" "Service uninstalled successfully!"
 }
 
-updateScript() {
-    logMessage "info" "Downloading script..."
-    sudo curl -# -o /usr/bin/diskcord https://raw.githubusercontent.com/Justus0405/Diskcord/refs/heads/main/diskcord
-    sudo chmod +x /usr/bin/diskcord
-    sudo systemctl restart "diskcord.service"
-    logMessage "done" "Successfully updated $(basename "$0")"
-}
-
 getHealth() {
     export embedMessage=""
     for drive in $DRIVES; do
@@ -261,7 +253,6 @@ printHelp() {
     echo -e "arguments:"
     echo -e "\t install 60s, 60m, 12h, or 1d, for seconds, minutes, hours, days."
     echo -e "\t uninstall"
-    echo -e "\t update"
     echo -e "\t test"
     echo -e "\t 60s, 60m, 12h, or 1d, for seconds, minutes, hours, days."
     echo -e "\t test"
