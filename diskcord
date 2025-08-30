@@ -156,13 +156,17 @@ getHealth() {
             # For normal drives
             logMessage "info" "Identified ${drive} as a sata drive..."
             driveHealth=$(sudo smartctl -H "/dev/${drive}" | grep "overall-health" | awk '{print $6}')
+            driveRuntime=$(sudo smartctl -A "/dev/sda" | grep "Power_On" | awk '{print $10}')
             driveWear=$(sudo smartctl -A "/dev/${drive}" | grep "Wear_Leveling_Count" | awk '{print $10}')
+            driveSectors=$(sudo smartctl -A "/dev/${drive}" | grep "Reallocated" | awk '{print $10}')
             driveTemperature=$(sudo smartctl -A "/dev/${drive}" | grep -i "Airflow_Temperature_Cel" | awk '{print $10}')
         else
             # For nvme drives
             logMessage "info" "Identified ${drive} as a nvme drive..."
             driveHealth=$(sudo smartctl -H "/dev/${drive}" | grep "overall-health" | awk '{print $6}')
+            driveRuntime=$(sudo smartctl -A "/dev/${drive}" | grep "Power On" | awk '{print $4}')
             driveWear=$(sudo nvme smart-log "/dev/${drive}" | grep "percentage_used" | awk '{print $3}')
+            driveSpare=$(sudo smartctl -A "/dev/${drive}" | grep "Spare" | head -n1 | awk '{print $3}')
             driveTemperature=$(sudo smartctl -A "/dev/${drive}" | grep -i "Temperature" | head -n1 | awk '{print $2}')
         fi
 
@@ -190,8 +194,20 @@ getHealth() {
             embedMessage+="Health Check: ${driveHealth}"$'\n'
         fi
 
+        if [ -n "${driveRuntime}" ]; then
+            embedMessage+="Power On Hours: ${driveRuntime}"$'\n'
+        fi
+
         if [ -n "${driveWear}" ]; then
             embedMessage+="Wear: ${driveWear}%"$'\n'
+        fi
+
+        if [ -n "${driveSectors}" ]; then
+            embedMessage+="Reallocated Sectors: ${driveSectors}%"$'\n'
+        fi
+
+        if [ -n "${driveSpare}" ]; then
+            embedMessage+="Available Spare: ${driveSpare}%"$'\n'
         fi
 
         if [ -n "${driveTemperature}" ]; then
