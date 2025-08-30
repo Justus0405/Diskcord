@@ -192,26 +192,32 @@ getHealth() {
 
         if [ -n "${driveHealth}" ]; then
             embedMessage+="Health Check: ${driveHealth}"$'\n'
+            unset driveHealth
         fi
 
         if [ -n "${driveRuntime}" ]; then
             embedMessage+="Power On Hours: ${driveRuntime}"$'\n'
+            unset driveRuntime
         fi
 
         if [ -n "${driveWear}" ]; then
             embedMessage+="Wear: ${driveWear}%"$'\n'
+            unset driveWear
         fi
 
         if [ -n "${driveSectors}" ]; then
             embedMessage+="Reallocated Sectors: ${driveSectors}%"$'\n'
+            unset driveSectors
         fi
 
         if [ -n "${driveSpare}" ]; then
-            embedMessage+="Available Spare: ${driveSpare}%"$'\n'
+            embedMessage+="Available Spare: ${driveSpare}"$'\n'
+            unset driveSpare
         fi
 
         if [ -n "${driveTemperature}" ]; then
             embedMessage+="Temperature: ${driveTemperature}°C"$'\n\n'
+            unset driveTemperature
         fi
     done
 }
