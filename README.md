@@ -34,18 +34,19 @@ The check interval must be formatted as:
 - 60m for minutes
 - 12h for hours
 - 1d for days
+- empty, run only once at boot
 
 This allows Diskcord to schedule health checks at the desired frequency.
 
 # Examples
 
-Either run yourself:
+Either run yourself once:
 
 ```shell
-./diskcord 1h
+./diskcord
 ```
 
-Or run in the background:
+Or run in the background every 1h:
 
 ```shell
 ./diskcord install 1h
@@ -91,7 +92,7 @@ chmod +x diskcord
 nano diskcord
 ```
 
-5. Run the script with the install and period argument:
+5. Run the script with the install and either a period argument or without:
 
 ```shell
 ./diskcord install 1d

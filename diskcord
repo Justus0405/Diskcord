@@ -64,11 +64,6 @@ getArguments() {
     "uninstall")
         uninstallScript
         ;;
-    "test")
-        checkEnviroment
-        getHealth
-        sendMessage
-        ;;
     "help")
         printHelp
         ;;
@@ -76,8 +71,11 @@ getArguments() {
         printVersion
         ;;
     "")
-        logMessage "info" "No arguments provided. Defaulting to every 1d..."
-        waitLoop "1d"
+        logMessage "info" "No arguments provided. Sending only once..."
+        checkEnviroment
+        getHealth
+        sendMessage
+        exit 0
         ;;
     *)
         waitLoop "$1"
@@ -271,7 +269,6 @@ printHelp() {
     echo -e "\t install 60s, 60m, 12h, or 1d, for seconds, minutes, hours, days."
     echo -e "\t uninstall"
     echo -e "\t 60s, 60m, 12h, or 1d, for seconds, minutes, hours, days."
-    echo -e "\t test"
     echo -e "\t help"
     echo -e "\t version"
     echo -e ""
