@@ -50,6 +50,11 @@ Or run in the background:
 ```shell
 ./diskcord install 1h
 ```
+## Preview
+
+| Passed | Failed |
+| ------ | ------ |
+| <img width="350" height="500" alt="passed" src="https://github.com/user-attachments/assets/23a3e2c2-bfe4-40f9-9aa1-0c983c0fe5bd" /> | <img width="350" height="500" alt="failed" src="https://github.com/user-attachments/assets/ed866f34-8315-4b84-84d8-bb7f1493e46f" /> |
 
 ## Dependencies
 
