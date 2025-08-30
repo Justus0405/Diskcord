@@ -201,7 +201,7 @@ getHealth() {
 }
 
 sendMessage() {
-    currentDatetime=$(date +%d-%m-"%Y %H:%M:%S")
+    currentDatetime=$(date "+%d.%m.%Y %H:%M:%S")
     message=$(jq -n \
         --arg username "Diskcord" \
         --arg avatar_url "$embed_avatar" \
