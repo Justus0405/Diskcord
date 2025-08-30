@@ -22,7 +22,7 @@ Diskcord is a lightweight daemon written in bash that monitors the health of you
 
 - Lightweight: The script is written in just a few hundret lines of bash code.
 - Background Service: Runs continuously as a daemon to keep your drives under watch.
-- S.M.A.R.T Monitoring: Checks drive health, reported wear percentage, and temperatures in Celsius.
+- S.M.A.R.T Monitoring: Checks various drive statistics.
 - Discord Integration: Sends formatted notifications to your Discord webhook.
 - Customizable: Select which drives to monitor and how often to check them.
 
