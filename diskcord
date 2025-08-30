@@ -1,0 +1,281 @@
+#!/usr/bin/env bash
+#
+# Drive health check daemon with discord integration
+#
+# Author: Justus0405
+# Date: 30.08.2025
+# License: MIT
+
+export scriptVersion="1.0"
+
+## USER CONFIGURATION START
+
+# Drives to check (space-separated, e.g. "sda sdb nvme0n1")
+export DRIVES=""
+
+# Discord webhook
+export WEBHOOK_URL=""
+
+# Ping a user when a test fails (OPTIONAL, can leave empty)
+export USER_ID=""
+
+## USER CONFIGURATION STOP
+
+### COLOR CODES ###
+export red="\e[1;31m"
+export green="\e[1;32m"
+export yellow="\e[1;33m"
+export cyan="\e[1;36m"
+export gray="\e[1;90m"
+export bold="\e[1m"
+export reset="\e[0m"
+
+logMessage() {
+    local type=$1
+    local message=$2
+    case "${type}" in
+    "info" | "INFO")
+        echo -e "[  ${cyan}INFO${reset}  ] ${message}"
+        ;;
+    "done" | "DONE")
+        echo -e "[  ${green}DONE${reset}  ] ${message}"
+        exit 0
+        ;;
+    "warning" | "WARNING")
+        echo -e "[ ${red}FAILED${reset} ] ${message}"
+        ;;
+    "error" | "ERROR")
+        echo -e "[  ${red}ERROR${reset} ] ${message}"
+        exit 1
+        ;;
+    *)
+        echo -e "[UNDEFINED] ${message}"
+        ;;
+    esac
+}
+
+getArguments() {
+    case "$1" in
+    "install")
+        checkEnviroment
+        installScript "$@"
+        ;;
+    "uninstall")
+        uninstallScript
+        ;;
+    "test")
+        checkEnviroment
+        getHealth
+        sendMessage
+        ;;
+    "help")
+        printHelp
+        ;;
+    "version")
+        printVersion
+        ;;
+    "")
+        logMessage "info" "No arguments provided. Defaulting to every 1d..."
+        waitLoop "1d"
+        ;;
+    *)
+        waitLoop "$1"
+        ;;
+    esac
+}
+
+checkEnviroment() {
+    command -v jq >/dev/null 2>&1 || logMessage "error" "jq not found."
+    command -v curl >/dev/null 2>&1 || logMessage "error" "curl not found."
+    command -v smartctl >/dev/null 2>&1 || logMessage "error" "smartctl not found."
+    command -v nvme >/dev/null 2>&1 || logMessage "error" "nvme-cli not found."
+
+    if [ -z "${WEBHOOK_URL}" ]; then
+        logMessage "error" "Missing discord webhook url."
+    fi
+
+    if [ -z "${DRIVES}" ]; then
+        logMessage "error" "Missing list of drives to check."
+    fi
+}
+
+installScript() {
+    local time="$2"
+
+    logMessage "info" "Copying script to /usr/bin..."
+    sudo cp "$0" /usr/bin/
+
+    logMessage "info" "Creating systemd service..."
+    sudo tee "/etc/systemd/system/diskcord.service" >/dev/null <<EOF
+[Unit]
+Description=Drive health check daemon with discord integration
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/diskcord ${time}
+Restart=on-failure
+User=root
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    logMessage "info" "Reloading systemd daemon..."
+    sudo systemctl daemon-reload
+
+    logMessage "info" "Enabling and starting diskcord.service..."
+    sudo systemctl enable --now "diskcord.service"
+
+    logMessage "done" "Service installed and started successfully!"
+}
+
+uninstallScript() {
+    logMessage "info" "Removing script from /usr/bin..."
+    sudo rm /usr/bin/diskcord
+
+    logMessage "info" "Stopping systemd service..."
+    sudo systemctl disable --now "diskcord.service"
+
+    logMessage "info" "Removing systemd service..."
+    sudo rm "/etc/systemd/system/diskcord.service"
+
+    logMessage "info" "Reloading systemd daemon..."
+    sudo systemctl daemon-reload
+
+    logMessage "done" "Service uninstalled successfully!"
+}
+
+updateScript() {
+    logMessage "info" "Downloading script..."
+    sudo curl -# -o /usr/bin/diskcord https://raw.githubusercontent.com/Justus0405/ShellCam/refs/heads/main/diskcord
+    sudo chmod +x /usr/bin/diskcord
+    sudo systemctl restart "diskcord.service"
+    logMessage "done" "Successfully updated $(basename "$0")"
+}
+
+getHealth() {
+    export embedMessage=""
+    for drive in $DRIVES; do
+        logMessage "info" "Getting statistics from ${drive}..."
+
+        if [[ "$drive" == *sd* ]]; then
+            # For normal drives
+            logMessage "info" "Identified ${drive} as a sata drive..."
+            driveHealth=$(sudo smartctl -H "/dev/${drive}" | grep "overall-health" | awk '{print $6}')
+            driveWear=$(sudo smartctl -A "/dev/${drive}" | grep "Wear_Leveling_Count" | awk '{print $10}')
+            driveTemperature=$(sudo smartctl -A "/dev/${drive}" | grep -i "Airflow_Temperature_Cel" | awk '{print $10}')
+        else
+            # For nvme drives
+            logMessage "info" "Identified ${drive} as a nvme drive..."
+            driveHealth=$(sudo smartctl -H "/dev/${drive}" | grep "overall-health" | awk '{print $6}')
+            driveWear=$(sudo nvme smart-log "/dev/${drive}" | grep "percentage_used" | awk '{print $3}')
+            driveTemperature=$(sudo smartctl -A "/dev/${drive}" | grep -i "Temperature" | head -n1 | awk '{print $2}')
+        fi
+
+        if [[ "$driveHealth" != *PASSED* ]]; then
+            logMessage "warning" "Drive ${drive} did not pass the S.M.A.R.T. test!"
+            embed_avatar="https://cdn-icons-png.flaticon.com/512/190/190406.png"
+            embed_color=15815241
+
+            if [ -n "${USER_ID}" ]; then
+                logMessage "info" "Pinging user ${USER_ID}"
+                curl -H "Content-Type: application/json" -X POST -d "{\"content\":\"<@${USER_ID}>\"}" "$WEBHOOK_URL"
+            fi
+
+        else
+            logMessage "info" "Drive ${drive} passed the S.M.A.R.T. test!"
+            embed_avatar="https://cdn-icons-png.flaticon.com/512/190/190411.png"
+            embed_color=2798457
+        fi
+
+        if [ -z "${drive}" ]; then
+            drive="N/A"
+        fi
+
+        if [ -z "${driveHealth}" ]; then
+            driveHealth="N/A"
+        fi
+
+        if [ -z "${driveWear}" ]; then
+            driveWear="N/A"
+        fi
+
+        if ! [[ "${driveTemperature}" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+            driveTemperature="N/A"
+        fi
+
+        embedMessage+="Drive **/dev/${drive}**"$'\n'
+        embedMessage+="Health Check: ${driveHealth}"$'\n'
+        embedMessage+="Wear: ${driveWear}%"$'\n'
+        embedMessage+="Temperature: ${driveTemperature}°C"$'\n\n'
+    done
+}
+
+sendMessage() {
+    currentDatetime=$(date +%d-%m-"%Y %H:%M:%S")
+    message=$(jq -n \
+        --arg username "Diskcord" \
+        --arg avatar_url "$embed_avatar" \
+        --arg title "**S.M.A.R.T. Status - $(cat /etc/hostname)**" \
+        --arg description "$embedMessage" \
+        --argjson color "$embed_color" \
+        --arg footer "Last checked: $currentDatetime" \
+        '{
+            username: $username,
+            avatar_url: $avatar_url,
+            embeds: [
+              {
+                title: $title,
+                description: $description,
+                color: $color,
+                footer: {
+                  text: $footer
+                }
+              }
+            ]
+          }')
+
+    curl -H "Content-Type: application/json" \
+        -X POST \
+        -d "$message" \
+        "$WEBHOOK_URL"
+}
+
+waitLoop() {
+    local time="$1"
+    while :; do
+        checkEnviroment
+        getHealth
+        sendMessage
+        logMessage "info" "Waiting ${time}..."
+        sleep "${time}" || {
+            logMessage "error" "Unrecognized option '$1'. Use $(basename "$0") help"
+        }
+    done
+}
+
+printHelp() {
+    echo -e "usage: $(basename "$0") [...]"
+    echo -e "arguments:"
+    echo -e "\t install 60s, 60m, 12h, or 1d, for seconds, minutes, hours, days."
+    echo -e "\t uninstall"
+    echo -e "\t update"
+    echo -e "\t test"
+    echo -e "\t 60s, 60m, 12h, or 1d, for seconds, minutes, hours, days."
+    echo -e "\t test"
+    echo -e "\t help"
+    echo -e "\t version"
+    echo -e ""
+    exit 0
+}
+
+printVersion() {
+    echo -e "               $(basename "$0") v${scriptVersion} - GNU bash, version 5.3"
+    echo -e "               Copyright (C) 2025-present Justus0405"
+    echo -e ""
+    exit 0
+}
+
+# PROGRAM START
+getArguments "$@"
