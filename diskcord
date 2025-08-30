@@ -30,6 +30,7 @@ export gray="\e[1;90m"
 export bold="\e[1m"
 export reset="\e[0m"
 
+### FUNCTIONS ###
 logMessage() {
     local type=$1
     local message=$2
@@ -277,5 +278,5 @@ printVersion() {
     exit 0
 }
 
-# PROGRAM START
+### PROGRAM START ###
 getArguments "$@"
