@@ -106,7 +106,6 @@ arguments:
          install 60s, 60m, 12h, or 1d, for seconds, minutes, hours, days.
          uninstall
          60s, 60m, 12h, or 1d, for seconds, minutes, hours, days.
-         test
          help
          version
 ```
