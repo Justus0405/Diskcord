@@ -148,7 +148,7 @@ uninstallScript() {
 
 updateScript() {
     logMessage "info" "Downloading script..."
-    sudo curl -# -o /usr/bin/diskcord https://raw.githubusercontent.com/Justus0405/ShellCam/refs/heads/main/diskcord
+    sudo curl -# -o /usr/bin/diskcord https://raw.githubusercontent.com/Justus0405/Diskcord/refs/heads/main/diskcord
     sudo chmod +x /usr/bin/diskcord
     sudo systemctl restart "diskcord.service"
     logMessage "done" "Successfully updated $(basename "$0")"

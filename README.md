@@ -80,7 +80,7 @@ cd Diskcord
 chmod +x diskcord
 ```
 
-4. Edit the script to configure for which drives to check, webhook url and optionally a userid for pings:
+4. Edit the script to configure for which drives to check, webhook url and optionally a user id for pings:
 
 ```shell
 nano diskcord
