@@ -147,14 +147,14 @@ uninstallScript() {
 
 getHealth() {
     export embedMessage=""
-    for drive in $DRIVES; do
+    for drive in ${DRIVES}; do
         logMessage "info" "Getting statistics from ${drive}..."
 
-        if [[ "$drive" == *sd* ]]; then
+        if [[ "${drive}" == *sd* ]]; then
             # For normal drives
             logMessage "info" "Identified ${drive} as a sata drive..."
             driveHealth=$(sudo smartctl -H "/dev/${drive}" | grep "overall-health" | awk '{print $6}')
-            driveRuntime=$(sudo smartctl -A "/dev/sda" | grep "Power_On" | awk '{print $10}')
+            driveRuntime=$(sudo smartctl -A "/dev/${drive}" | grep "Power_On" | awk '{print $10}')
             driveWear=$(sudo smartctl -A "/dev/${drive}" | grep "Wear_Leveling_Count" | awk '{print $10}')
             driveSectors=$(sudo smartctl -A "/dev/${drive}" | grep "Reallocated" | awk '{print $10}')
             driveTemperature=$(sudo smartctl -A "/dev/${drive}" | grep -i "Airflow_Temperature_Cel" | awk '{print $10}')
@@ -168,14 +168,14 @@ getHealth() {
             driveTemperature=$(sudo smartctl -A "/dev/${drive}" | grep -i "Temperature" | head -n1 | awk '{print $2}')
         fi
 
-        if [[ "$driveHealth" != *PASSED* ]]; then
+        if [[ "${driveHealth}" != *PASSED* ]]; then
             logMessage "warning" "Drive ${drive} did not pass the S.M.A.R.T. test!"
             embed_avatar="https://cdn-icons-png.flaticon.com/512/190/190406.png"
             embed_color=15815241
 
             if [ -n "${USER_ID}" ]; then
                 logMessage "info" "Pinging user ${USER_ID}"
-                curl -H "Content-Type: application/json" -X POST -d "{\"content\":\"<@${USER_ID}>\"}" "$WEBHOOK_URL"
+                curl -H "Content-Type: application/json" -X POST -d "{\"content\":\"<@${USER_ID}>\"}" "${WEBHOOK_URL}"
             fi
 
         else
@@ -224,11 +224,11 @@ sendMessage() {
     currentDatetime=$(date "+%d.%m.%Y %H:%M:%S")
     message=$(jq -n \
         --arg username "Diskcord" \
-        --arg avatar_url "$embed_avatar" \
+        --arg avatar_url "${embed_avatar}" \
         --arg title "**S.M.A.R.T. Status - $(cat /etc/hostname)**" \
-        --arg description "$embedMessage" \
-        --argjson color "$embed_color" \
-        --arg footer "Last checked: $currentDatetime" \
+        --arg description "${embedMessage}" \
+        --argjson color "${embed_color}" \
+        --arg footer "Last checked: ${currentDatetime}" \
         '{
             username: $username,
             avatar_url: $avatar_url,
@@ -246,8 +246,8 @@ sendMessage() {
 
     curl -H "Content-Type: application/json" \
         -X POST \
-        -d "$message" \
-        "$WEBHOOK_URL"
+        -d "${message}" \
+        "${WEBHOOK_URL}"
 }
 
 waitLoop() {
