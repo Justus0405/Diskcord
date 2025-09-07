@@ -108,7 +108,8 @@ installScript() {
     sudo tee "/etc/systemd/system/diskcord.service" >/dev/null <<EOF
 [Unit]
 Description=Drive health check daemon with discord integration
-After=network.target
+After=multi-user.target
+Requires=multi-user.target
 
 [Service]
 Type=simple
