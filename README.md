@@ -51,6 +51,7 @@ Or run in the background every 1h:
 ```shell
 ./diskcord install 1h
 ```
+
 ## Preview
 
 | Passed | Failed |
