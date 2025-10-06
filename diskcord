@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Drive health check daemon with discord integration
+# Drive health check daemon with Discord integration
 #
 # Author: Justus0405
 # Date: 30.08.2025
@@ -169,19 +169,19 @@ getHealth() {
         if [[ "${drive}" == *sd* ]]; then
             # For normal drives
             logMessage "info" "Identified ${drive} as a sata drive..."
-            driveHealth=$(sudo smartctl -H "/dev/${drive}" | grep "overall-health" | awk '{print $6}')
-            driveRuntime=$(sudo smartctl -A "/dev/${drive}" | grep "Power_On" | awk '{print $10}')
-            driveWear=$(sudo smartctl -A "/dev/${drive}" | grep "Wear_Leveling_Count" | awk '{print $10}')
-            driveSectors=$(sudo smartctl -A "/dev/${drive}" | grep "Reallocated" | awk '{print $10}')
-            driveTemperature=$(sudo smartctl -A "/dev/${drive}" | grep -i "Airflow_Temperature_Cel" | awk '{print $10}')
+            driveHealth=$(sudo smartctl -H "/dev/${drive}" | grep "overall-health" | head -n 1 | awk '{print $6}')
+            driveRuntime=$(sudo smartctl -A "/dev/${drive}" | grep "Power_On" | head -n 1 | awk '{print $10}')
+            driveWear=$(sudo smartctl -A "/dev/${drive}" | grep "Wear_Leveling_Count" | head -n 1 | awk '{print $10}')
+            driveSectors=$(sudo smartctl -A "/dev/${drive}" | grep "Reallocated" | head -n 1 | awk '{print $10}')
+            driveTemperature=$(sudo smartctl -A "/dev/${drive}" | grep -i "Airflow_Temperature_Cel" | head -n 1 | awk '{print $10}')
         else
             # For nvme drives
             logMessage "info" "Identified ${drive} as a nvme drive..."
-            driveHealth=$(sudo smartctl -H "/dev/${drive}" | grep "overall-health" | awk '{print $6}')
-            driveRuntime=$(sudo smartctl -A "/dev/${drive}" | grep "Power On" | awk '{print $4}')
-            driveWear=$(sudo nvme smart-log "/dev/${drive}" | grep "percentage_used" | awk '{print $3}')
-            driveSpare=$(sudo smartctl -A "/dev/${drive}" | grep "Spare" | head -n1 | awk '{print $3}')
-            driveTemperature=$(sudo smartctl -A "/dev/${drive}" | grep -i "Temperature" | head -n1 | awk '{print $2}')
+            driveHealth=$(sudo smartctl -H "/dev/${drive}" | grep "overall-health" | head -n 1 | awk '{print $6}')
+            driveRuntime=$(sudo smartctl -A "/dev/${drive}" | grep "Power On" | head -n 1 | awk '{print $4}')
+            driveWear=$(sudo nvme smart-log "/dev/${drive}" | grep "percentage_used" | head -n 1 | awk '{print $3}')
+            driveSpare=$(sudo smartctl -A "/dev/${drive}" | grep "Spare" | head -n1 | head -n 1 | awk '{print $3}')
+            driveTemperature=$(sudo smartctl -A "/dev/${drive}" | grep -i "Temperature" | head -n 1 | awk '{print $2}')
         fi
 
         if [[ "${driveHealth}" != *PASSED* ]]; then
