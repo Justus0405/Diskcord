@@ -252,7 +252,20 @@ pingUser() {
 
         if [[ ${driveFailed} == "true" ]]; then
             logMessage "info" "Pinging user ${USER_ID}"
-            curl -H "Content-Type: application/json" -X POST -d "{\"content\":\"<@${USER_ID}>\"}" "${WEBHOOK_URL}"
+            message=$(jq -n \
+                --arg username "Diskcord" \
+                --arg avatar_url "${embed_avatar}" \
+                --arg content "<@${USER_ID}>" \
+                '{
+                    username: $username,
+                    avatar_url: $avatar_url,
+                    content: $content
+                }')
+
+            curl -H "Content-Type: application/json" \
+                -X POST \
+                -d "${message}" \
+                "${WEBHOOK_URL}"
         fi
 
     fi
