@@ -19,6 +19,10 @@ export WEBHOOK_URL=""
 # Ping a user when a test fails (OPTIONAL, can leave empty)
 export USER_ID=""
 
+# info: send all results when a test is completed
+# warnings: only send results when a test has failed
+export LOGLEVEL="info"
+
 ## USER CONFIGURATION STOP
 
 ### COLOR CODES ###
@@ -89,7 +93,6 @@ getArguments() {
         logMessage "info" "No arguments provided. Sending only once..."
         checkEnviroment
         getHealth
-        sendMessage
         exit 0
         ;;
     *)
@@ -186,22 +189,19 @@ getHealth() {
 
         if [[ "${driveHealth}" != *PASSED* ]]; then
             logMessage "warning" "Drive ${drive} did not pass the S.M.A.R.T. test!"
+            driveFailed="true"
             embed_avatar="https://cdn-icons-png.flaticon.com/512/190/190406.png"
-            embed_color=15815241
-
-            if [ -n "${USER_ID}" ]; then
-                logMessage "info" "Pinging user ${USER_ID}"
-                curl -H "Content-Type: application/json" -X POST -d "{\"content\":\"<@${USER_ID}>\"}" "${WEBHOOK_URL}"
-            fi
+            embed_color="15815241"
 
         else
             logMessage "info" "Drive ${drive} passed the S.M.A.R.T. test!"
             embed_avatar="https://cdn-icons-png.flaticon.com/512/190/190411.png"
-            embed_color=2798457
+            embed_color="2798457"
         fi
 
         if [ -n "${drive}" ]; then
             embedMessage+="Drive **/dev/${drive}**"$'\n'
+            unset drive
         fi
 
         if [ -n "${driveHealth}" ]; then
@@ -233,7 +233,30 @@ getHealth() {
             embedMessage+="Temperature: ${driveTemperature}°C"$'\n\n'
             unset driveTemperature
         fi
+
     done
+
+    if [[ $LOGLEVEL == "warnings" && ${driveFailed} == "true" ]]; then
+        pingUser
+        sendMessage
+    fi
+
+    if [[ $LOGLEVEL == "info" ]]; then
+        pingUser
+        sendMessage
+    fi
+}
+
+pingUser() {
+    if [ -n "${USER_ID}" ]; then
+
+        if [[ ${driveFailed} == "true" ]]; then
+            logMessage "info" "Pinging user ${USER_ID}"
+            curl -H "Content-Type: application/json" -X POST -d "{\"content\":\"<@${USER_ID}>\"}" "${WEBHOOK_URL}"
+        fi
+
+    fi
+    unset driveFailed
 }
 
 sendMessage() {
@@ -269,7 +292,6 @@ waitLoop() {
     while :; do
         checkEnviroment
         getHealth
-        sendMessage
         logMessage "info" "Waiting ${time}..."
         sleep "${time}" || {
             logMessage "error" "Unrecognized option '$1'. Use $(basename "$0") help"
