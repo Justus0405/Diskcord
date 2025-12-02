@@ -6,7 +6,7 @@
 # Date: 30.08.2025
 # License: MIT
 
-export scriptVersion="1.0"
+export scriptVersion="1.1"
 
 ## USER CONFIGURATION START
 
@@ -171,7 +171,7 @@ getHealth() {
             logMessage "info" "Identified ${drive} as a sata drive..."
             driveHealth=$(sudo smartctl -H "/dev/${drive}" | grep "overall-health" | head -n 1 | awk '{print $6}')
             driveRuntime=$(sudo smartctl -A "/dev/${drive}" | grep "Power_On" | head -n 1 | awk '{print $10}')
-            driveWear=$(sudo smartctl -A "/dev/${drive}" | grep "Wear_Leveling_Count" | head -n 1 | awk '{print $10}')
+            driveWear=$(sudo smartctl -A "/dev/${drive}" | grep "Wear_Leveling_Count" | head -n 1 | awk '{print int($10)}')
             driveSectors=$(sudo smartctl -A "/dev/${drive}" | grep "Reallocated" | head -n 1 | awk '{print $10}')
             driveTemperature=$(sudo smartctl -A "/dev/${drive}" | grep -i "Airflow_Temperature_Cel" | head -n 1 | awk '{print $10}')
         else
@@ -179,7 +179,7 @@ getHealth() {
             logMessage "info" "Identified ${drive} as a nvme drive..."
             driveHealth=$(sudo smartctl -H "/dev/${drive}" | grep "overall-health" | head -n 1 | awk '{print $6}')
             driveRuntime=$(sudo smartctl -A "/dev/${drive}" | grep "Power On" | head -n 1 | awk '{print $4}')
-            driveWear=$(sudo nvme smart-log "/dev/${drive}" | grep "percentage_used" | head -n 1 | awk '{print $3}')
+            driveWear=$(sudo nvme smart-log "/dev/${drive}" | grep "percentage_used" | head -n 1 | awk '{print int($3)}')
             driveSpare=$(sudo smartctl -A "/dev/${drive}" | grep "Spare" | head -n1 | head -n 1 | awk '{print $3}')
             driveTemperature=$(sudo smartctl -A "/dev/${drive}" | grep -i "Temperature" | head -n 1 | awk '{print $2}')
         fi
@@ -237,28 +237,26 @@ getHealth() {
 }
 
 sendMessage() {
-    currentDatetime=$(date "+%d.%m.%Y %H:%M:%S")
+    currentTime=$(date -Iseconds)
     message=$(jq -n \
         --arg username "Diskcord" \
         --arg avatar_url "${embed_avatar}" \
         --arg title "**S.M.A.R.T. Status - $(cat /etc/hostname)**" \
         --arg description "${embedMessage}" \
         --argjson color "${embed_color}" \
-        --arg footer "Last checked: ${currentDatetime}" \
+        --arg timestamp "${currentTime}" \
         '{
             username: $username,
             avatar_url: $avatar_url,
-            embeds: [
-              {
-                title: $title,
-                description: $description,
-                color: $color,
-                footer: {
-                  text: $footer
+            embeds:[
+                {
+                    title: $title,
+                    description: $description,
+                    color: $color,
+                    timestamp: $timestamp
                 }
-              }
             ]
-          }')
+        }')
 
     curl -H "Content-Type: application/json" \
         -X POST \
