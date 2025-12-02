@@ -236,12 +236,12 @@ getHealth() {
 
     done
 
-    if [[ $LOGLEVEL == "warnings" && ${driveFailed} == "true" ]]; then
+    if [[ ${LOGLEVEL} == "warnings" && ${driveFailed} == "true" ]]; then
         pingUser
         sendMessage
     fi
 
-    if [[ $LOGLEVEL == "info" ]]; then
+    if [[ ${LOGLEVEL} == "info" ]]; then
         pingUser
         sendMessage
     fi
