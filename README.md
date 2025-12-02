@@ -56,7 +56,7 @@ Or run in the background every 1h:
 
 | Passed                                                                                                                              | Failed                                                                                                                              |
 | ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| <img width="350" height="500" alt="passed" src="https://github.com/user-attachments/assets/23a3e2c2-bfe4-40f9-9aa1-0c983c0fe5bd" /> | <img width="350" height="500" alt="failed" src="https://github.com/user-attachments/assets/ed866f34-8315-4b84-84d8-bb7f1493e46f" /> |
+| <img width="350" height="475" alt="passed" src="https://github.com/user-attachments/assets/0bb37e32-b4e5-4732-93fe-0e24b57857e9" /> | <img width="350" height="475" alt="failed" src="https://github.com/user-attachments/assets/d73fa750-39ea-4d6d-8e0c-c3841a37b32f" /> |
 
 ## Dependencies
 
