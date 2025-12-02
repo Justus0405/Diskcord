@@ -191,12 +191,12 @@ getHealth() {
             logMessage "warning" "Drive ${drive} did not pass the S.M.A.R.T. test!"
             driveFailed="true"
             embed_avatar="https://cdn-icons-png.flaticon.com/512/190/190406.png"
-            embed_color="15815241"
+            embed_color="#f05348"
 
         else
             logMessage "info" "Drive ${drive} passed the S.M.A.R.T. test!"
             embed_avatar="https://cdn-icons-png.flaticon.com/512/190/190411.png"
-            embed_color="2798457"
+            embed_color="#33ba7c"
         fi
 
         if [ -n "${drive}" ]; then
@@ -266,7 +266,7 @@ sendMessage() {
         --arg avatar_url "${embed_avatar}" \
         --arg title "**S.M.A.R.T. Status - $(cat /etc/hostname)**" \
         --arg description "${embedMessage}" \
-        --argjson color "${embed_color}" \
+        --arg color "${embed_color}" \
         --arg timestamp "${currentTime}" \
         '{
             username: $username,
