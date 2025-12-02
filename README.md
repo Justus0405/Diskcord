@@ -54,8 +54,8 @@ Or run in the background every 1h:
 
 ## Preview
 
-| Passed | Failed |
-| ------ | ------ |
+| Passed                                                                                                                              | Failed                                                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | <img width="350" height="500" alt="passed" src="https://github.com/user-attachments/assets/23a3e2c2-bfe4-40f9-9aa1-0c983c0fe5bd" /> | <img width="350" height="500" alt="failed" src="https://github.com/user-attachments/assets/ed866f34-8315-4b84-84d8-bb7f1493e46f" /> |
 
 ## Dependencies
@@ -72,7 +72,7 @@ nvme-cli
 1. Clone the repository:
 
 ```shell
-git clone https://github.com/Justus0405/Diskcord.git
+git clone --depth 1 https://github.com/Justus0405/Diskcord.git
 ```
 
 2. Navigate to the directory:
